@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Portfolio of alvaro8317.lat — S3 + CloudFront + SSL + OAC
+
+Parameters:
+  DomainName:
+    Type: String
+    Default: "alvaro8317.lat"
+  SubDomain:
+    Type: String
+    Default: "www.alvaro8317.lat"
+
+Resources:
+  BucketS3:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref DomainName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+
+  OAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "${DomainName}-oac"
+        Description: Access control for CloudFront to S3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+        OriginAccessControlOriginType: s3
+
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames:
+        - !Ref SubDomain
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Ref DomainName
+          ValidationDomain: !Ref DomainName
+        - DomainName: !Ref SubDomain
+          ValidationDomain: !Ref DomainName
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        Aliases:
+          - !Ref DomainName
+          - !Ref SubDomain
+        ViewerCertificate:
+          AcmCertificateArn: !Ref Certificate
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: ["GET", "HEAD"]
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt BucketS3.RegionalDomainName
+            S3OriginConfig: {}
+            OriginAccessControlId: !Ref OAC
+
+  BucketS3Policy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref BucketS3
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowCloudFrontServicePrincipalReadOnly
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: "s3:GetObject"
+            Resource: !Sub "arn:aws:s3:::${BucketS3}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}"
+
+Outputs:
+  S3BucketName:
+    Description: Nombre del bucket S3 que aloja el portafolio.
+    Value: !Ref BucketS3
+
+  S3BucketURL:
+    Description: URL del bucket S3 (solo accesible desde CloudFront).
+    Value: !Sub "https://s3.console.aws.amazon.com/s3/buckets/${BucketS3}"
+
+  CertificateArn:
+    Description: ARN del certificado SSL emitido por ACM.
+    Value: !Ref Certificate
+
+  CloudFrontDomainName:
+    Description: Dominio asignado automaticamente por CloudFront.
+    Value: !GetAtt CloudFrontDistribution.DomainName
+
+  CloudFrontDistributionId:
+    Description: ID de la distribucion CloudFront (util para invalidaciones).
+    Value: !Ref CloudFrontDistribution
+
+  PortfolioURL:
+    Description: URL publica final del portafolio.
+    Value: !Sub "https://${SubDomain}"
