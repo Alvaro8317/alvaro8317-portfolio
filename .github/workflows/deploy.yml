@@ -13,10 +13,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Install dependencies (frontend)
-        run: npm ci && npm run build
-        working-directory: src/src
-      
-      - name: Deploy app (frontend)
-        run: aws s3 cp dist s3://alvaro8317.lat/ --recursive
+      - name: Build & Deploy frontend
+        run: |
+          set -e
+          npm ci
+          npm run build
+          aws s3 cp dist s3://alvaro8317.lat/ --recursive
         working-directory: src/src
