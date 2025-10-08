@@ -24,3 +24,7 @@ body {
   background-size: 400% 400%;
   animation: gradient 15s ease infinite;
 }
+
+.text-color-aws {
+  color: oklch(0.769 0.188 70.08)
+}
