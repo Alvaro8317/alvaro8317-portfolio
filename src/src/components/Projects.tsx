@@ -1,3 +1,5 @@
+import { useState } from "react"
+
 type Project = {
     title: string
     href: string
@@ -29,24 +31,32 @@ const projects: Project[] = [
     },
 ];
 
+
 export default function Projects() {
+    const [hovered, setHovered] = useState<number | null>(null);
+
     return (
         <section id="projects" className="mx-auto max-w-4xl px-5 py-6">
             <h2 className="text-2xl font-bold mb-6">Proyectos</h2>
             <ul className="grid md:grid-cols-2 gap-6">
                 {projects.map((p, i) => {
-                    // 🎨 Define colores personalizados según el índice
-                    const color =
-                        i < 2 ? "#a435f0" : "#4fbaef";
-
+                    const color = i < 2 ? "#a435f0" : "#4fbaef";
                     return (
                         <li
                             key={p.title}
-                            className={`group rounded-xl border border-black/10 dark:border-white/10 p-5 transition-colors hover:border-[${color}]`}
+                            onMouseEnter={() => setHovered(i)}
+                            onMouseLeave={() => setHovered(null)}
+                            className={`group rounded-xl border border-black/10 dark:border-white/10 p-5 transition-colors`}
+                            style={{
+                                borderColor: hovered === i ? color : "",
+                            }}
                         >
                             <a href={p.href} className="block">
                                 <h3
-                                    className={`font-semibold text-lg transition-colors group-hover:text-[${color}]`}
+                                    className="font-semibold text-lg transition-colors"
+                                    style={{
+                                        color: hovered === i ? color : "",
+                                    }}
                                 >
                                     {p.title}
                                 </h3>
