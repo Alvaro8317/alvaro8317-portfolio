@@ -24,7 +24,7 @@ export default function Hero() {
                     Construyo productos en la nube.
                 </h1>
                 <p className="mt-4 max-w-2xl text-zinc-600 dark:text-zinc-300">
-                    Cloud Developer e instructor en Udemy enfocado en AWS: Lambda, API Gateway,
+                    Software engineer, speaker e instructor en Udemy enfocado en AWS: Lambda, API Gateway,
                     DynamoDB, S3, CDK/SAM y CI/CD. Me gusta diseñar sistemas simples, escalables y
                     bien documentados, además de enseñar y mentorear.
                 </p>

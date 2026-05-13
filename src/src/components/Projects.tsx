@@ -11,19 +11,26 @@ const projects: Project[] = [
     {
         title: "Curso: AWS Serverless desde cero",
         href: "https://www.udemy.com/course/desarrollo-con-aws-de-cero-a-experimentado/?couponCode=AWS-SERVERLESS-NOV",
-        meta: "Udemy • 13+ horas",
+        meta: "Udemy • AWS • IaC • Cloud computing • 13+ horas",
         desc:
             "Curso práctico enfocado a desarrollo serverless con AWS CloudFormation, CDK, SAM, Serverless Framework y Terraform",
     },
     {
-        title: "De cero a contratado - Cómo usar IA para conseguir trabajo",
+        title: "Curso: De cero a contratado - Cómo usar IA para conseguir trabajo",
         href: "https://www.udemy.com/course/de-cero-a-contratado-como-usar-ia-para-conseguir-trabajo/?referralCode=D8FE869F0D408BEC387D",
         meta: "IA • AWS • CV • Canva • LinkedIn • Gratuito",
         desc:
             "Curso enfocado a mejorar el currículum vitae y perfil de LinkedIn",
     },
     {
-        title: "Mentoría - Data engineering y cloud technologies",
+        title: "Curso: Testing con Python - De código roto a código confiable",
+        href: "https://www.udemy.com/course/draft/7089941/?referralCode=4954DA8A247154548234",
+        meta: "Python • AWS • Testing • Unit • Pytest • Hypothesis • 14+ horas",
+        desc:
+            "Curso práctico en el que se enseña a crear pruebas unitarias robustas y confiables",
+    },
+    {
+        title: "Mentoría: Data engineering y cloud technologies",
         href: "#",
         meta: "Azure • MongoDB • SQL • Redis • Bash",
         desc:
@@ -40,7 +47,7 @@ export default function Projects() {
             <h2 className="text-2xl font-bold mb-6">Proyectos</h2>
             <ul className="grid md:grid-cols-2 gap-6">
                 {projects.map((p, i) => {
-                    const color = i < 2 ? "#a435f0" : "#4fbaef";
+                    const color = i <= 2 ? "#a435f0" : "#4fbaef";
                     return (
                         <li
                             key={p.title}
