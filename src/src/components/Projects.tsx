@@ -10,7 +10,7 @@ type Project = {
 const projects: Project[] = [
     {
         title: "Curso: AWS Serverless desde cero",
-        href: "https://www.udemy.com/course/desarrollo-con-aws-de-cero-a-experimentado/?couponCode=AWS-SERVERLESS-NOV",
+        href: "https://www.udemy.com/course/desarrollo-con-aws-de-cero-a-experimentado/?referralCode=5AFA70D38E4375FCEE13",
         meta: "Udemy • AWS • IaC • Cloud computing • 13+ horas",
         desc:
             "Curso práctico enfocado a desarrollo serverless con AWS CloudFormation, CDK, SAM, Serverless Framework y Terraform",
