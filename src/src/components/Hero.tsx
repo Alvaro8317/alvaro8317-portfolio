@@ -46,7 +46,7 @@ export default function Hero() {
 
             <div className="flex-1 flex justify-center md:justify-end">
                 <img
-                    src="https://media.licdn.com/dms/image/v2/D5603AQEQYX5dT_vrxQ/profile-displayphoto-shrink_800_800/B56ZPfEh19G8Ag-/0/1734614327470?e=1762992000&v=beta&t=7_A7avrYuhUH1FQJH91bjogHUC39M9XwdGc5tuTg1MU"
+                    src="https://img-c.udemycdn.com/user/200_H/56602298_cf24_2.jpg"
                     alt="Foto de Álvaro Garzón"
                     className="w-48 h-48 md:w-64 md:h-64 object-cover rounded-full shadow-lg border-4 border-amber-500/20"
                 />
