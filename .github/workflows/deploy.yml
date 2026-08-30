@@ -1,22 +1,37 @@
+name: Deploy frontend
+
 on:
   push:
     branches:
       - main
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Install dependencies (frontend)
-        run: npm ci && npm run build && aws s3 cp dist s3://alvaro8317.lat/ --recursive
+      - name: Build frontend
+        run: npm ci && npm run build
         working-directory: src
-      
-      - name: Deploy app (frontend)
+
+      - name: Upload to S3
         run: aws s3 cp dist s3://alvaro8317.lat/ --recursive
         working-directory: src
+
+      - name: Invalidate CloudFront cache
+        run: |
+          DISTRIBUTION_ID=$(aws cloudformation describe-stacks \
+            --stack-name alvaro8317-portfolio \
+            --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" \
+            --output text)
+          echo "Invalidating distribution $DISTRIBUTION_ID"
+          aws cloudfront create-invalidation \
+            --distribution-id "$DISTRIBUTION_ID" \
+            --paths "/*"
