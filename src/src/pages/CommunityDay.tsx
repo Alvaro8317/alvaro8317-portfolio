@@ -6,21 +6,34 @@ import { Footer } from "../components";
 
 const TEAL = "#0AB981";
 
-// >>> EDITA AQUÍ los datos de la charla <<<
 const talk = {
     time: "11:00 – 11:45",
     title: "Tu ruta de certificación hacia la AI Practitioner y Data Engineer Associate",
     speaker: "Álvaro Eduardo Garzón Pira",
 };
 
+const awsPromo = {
+    code: "AIF2CLOUD",
+    href: "https://www.pearsonvue.com/us/en/aws/aif2cloud.html",
+    summary:
+        "AWS y Pearson VUE tienen una promoción por tiempo limitado para dar tu primer paso en certificaciones cloud: 50% de descuento en el examen AWS Certified AI Practitioner (AIF-C01) y, si lo apruebas, un examen gratis de AWS Certified Cloud Practitioner (CLF-C02).",
+    conditions: [
+        "Aplica el código AIF2CLOUD al pagar el registro del examen AI Practitioner en Pearson VUE.",
+        "El examen AI Practitioner debe presentarse antes del 30 de septiembre de 2026 (11:59 PM hora local).",
+        "El examen Cloud Practitioner gratuito debe presentarse antes del 30 de noviembre de 2026 (11:59 PM hora local).",
+        "El voucher gratis del Cloud Practitioner se activa automáticamente al aprobar el AI Practitioner; si lo repruebas, pierdes ese beneficio.",
+        "Sin requisitos técnicos ni de programación. Debes ser mayor de 18 años.",
+        "Una promoción por persona/cuenta. No acumulable con otras ofertas, no transferible ni revendible.",
+        "No disponible en Cuba, Irán, Corea del Norte, Siria, Crimea ni Rusia.",
+    ],
+};
+
 type Course = { title: string; href: string; meta: string; desc: string };
 
-// >>> Reemplaza cada `href` por la URL con cupón gratuito de Udemy <<<
-// formato: https://www.udemy.com/course/<slug>/?couponCode=XXXXXXXXXXXX
 const courses: Course[] = [
     {
         title: "AWS Serverless desde cero",
-        href: "https://www.udemy.com/course/desarrollo-con-aws-de-cero-a-experimentado/?referralCode=5AFA70D38E4375FCEE13",
+        href: "https://www.udemy.com/course/desarrollo-con-aws-de-cero-a-experimentado/?couponCode=019C773DC5A19DBDCA76",
         meta: "Udemy • AWS • IaC • Cloud • 13+ horas",
         desc: "Desarrollo serverless con CloudFormation, CDK, SAM, Serverless Framework y Terraform.",
     },
@@ -32,7 +45,7 @@ const courses: Course[] = [
     },
     {
         title: "Testing con Python - De código roto a código confiable",
-        href: "https://www.udemy.com/course/draft/7089941/?referralCode=4954DA8A247154548234",
+        href: "https://www.udemy.com/course/unit-testing-con-python/?couponCode=58926150F8DC5596269B",
         meta: "Python • Testing • Pytest • Hypothesis • 14+ horas",
         desc: "Crea pruebas unitarias robustas y confiables.",
     },
@@ -118,6 +131,53 @@ export default function CommunityDay() {
                         </li>
                     ))}
                 </ul>
+
+                {/* Promoción AWS AI Practitioner + Cloud Practitioner */}
+                <h2 className="mt-12 text-2xl font-bold">
+                    Promoción AWS: AI Practitioner + Cloud Practitioner
+                </h2>
+                <div
+                    className="mt-6 rounded-xl border p-6"
+                    style={{ borderColor: `${TEAL}55` }}
+                >
+                    <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                        {awsPromo.summary}
+                    </p>
+
+                    <div className="mt-5 flex flex-wrap items-center gap-3">
+                        <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                            Código de descuento
+                        </span>
+                        <code
+                            className="rounded-md border px-3 py-1 text-base font-bold tracking-widest"
+                            style={{ borderColor: TEAL, color: TEAL }}
+                        >
+                            {awsPromo.code}
+                        </code>
+                    </div>
+
+                    <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                        Condiciones más importantes
+                    </p>
+                    <ul className="mt-3 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                        {awsPromo.conditions.map((c) => (
+                            <li key={c} className="flex gap-2">
+                                <span style={{ color: TEAL }}>•</span>
+                                <span>{c}</span>
+                            </li>
+                        ))}
+                    </ul>
+
+                    <a
+                        href={awsPromo.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-6 inline-block rounded-full border px-4 py-1.5 text-sm transition-colors"
+                        style={{ borderColor: TEAL, color: TEAL }}
+                    >
+                        Ver la promoción oficial →
+                    </a>
+                </div>
 
             </section>
 
