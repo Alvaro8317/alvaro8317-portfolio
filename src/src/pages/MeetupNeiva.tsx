@@ -16,10 +16,9 @@ const talk = {
 
 type Course = { title: string; href: string; meta: string; desc: string };
 
-// Cupones actuales de CommunityDay.tsx; reemplazar por los nuevos del evento cuando estén.
 const featured: Course = {
     title: "AWS Serverless desde cero",
-    href: "https://www.udemy.com/course/desarrollo-con-aws-de-cero-a-experimentado/?couponCode=019C773DC5A19DBDCA76",
+    href: "https://www.udemy.com/course/desarrollo-con-aws-de-cero-a-experimentado/?couponCode=AWS-UG-NEIVA-10-26",
     meta: "Udemy • AWS • IaC • Cloud • 13+ horas",
     desc: "Desarrollo serverless con CloudFormation, CDK, SAM, Serverless Framework y Terraform.",
 };
@@ -33,7 +32,7 @@ const others: Course[] = [
     },
     {
         title: "Testing con Python - De código roto a código confiable",
-        href: "https://www.udemy.com/course/unit-testing-con-python/?couponCode=58926150F8DC5596269B",
+        href: "https://www.udemy.com/course/unit-testing-con-python/?couponCode=AWS-UG-NEIVA-10-26",
         meta: "Python • Testing • Pytest • Hypothesis • 14+ horas",
         desc: "Crea pruebas unitarias robustas y confiables.",
     },
