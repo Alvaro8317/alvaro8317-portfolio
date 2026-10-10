@@ -1,0 +1,122 @@
+name: CI
+
+# Basado en el ci.yml de aws-cert-simulator. Los jobs corren en el runner del WSL
+# (infra/wsl-runner.sh de ese repo, con REPO=Alvaro8317/alvaro8317-portfolio) mientras la
+# variable de repo CI_RUNNER esté definida; si no, en ubuntu-latest.
+on:
+  # Sin `push` a main: ahí ya corre como job `ci` de deploy.yml (evita la corrida doble).
+  pull_request:
+    branches: [main]
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # En un PR, qué áreas tocan los archivos. Fuera de un PR (workflow_call desde deploy.yml)
+  # corre todo antes de producción. Un cambio en .github/ también corre todo.
+  changes:
+    # Los PRs de forks y de Dependabot van a ubuntu-latest: no se corre código ajeno en el WSL.
+    runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && github.actor != 'dependabot[bot]' && vars.CI_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 5
+    outputs:
+      frontend: ${{ steps.areas.outputs.frontend }}
+      infra: ${{ steps.areas.outputs.infra }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # Hace falta la rama base para calcular el merge-base.
+          fetch-depth: 0
+
+      - id: areas
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            printf '%s=true\n' frontend infra | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files="$(git diff --name-only "origin/$BASE_REF...HEAD")"
+          printf '%s\n' "$files"
+          has() { grep -qE "$1" <<< "$files" && echo true || echo false; }
+          all="$(has '^\.github/')"
+          frontend="$(has '^src/')"
+          infra="$(has '^(infra|ci)/')"
+          [ "$all" = "true" ] && frontend=true && infra=true
+          printf 'frontend=%s\ninfra=%s\n' "$frontend" "$infra" | tee -a "$GITHUB_OUTPUT"
+
+  # ESLint, chequeo de tipos (tsc -b) y build de Vite: lo mismo que hace deploy.yml antes de subir.
+  frontend:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && github.actor != 'dependabot[bot]' && vars.CI_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: src
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: src/.nvmrc
+          cache: npm
+          cache-dependency-path: src/package-lock.json
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run build
+
+      # Falla solo ante vulnerabilidades críticas de las dependencias de runtime.
+      - run: npm audit --audit-level=critical --omit=dev
+
+  infra:
+    needs: changes
+    if: needs.changes.outputs.infra == 'true'
+    runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && github.actor != 'dependabot[bot]' && vars.CI_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Install cfn-lint
+        run: pip install --require-hashes -r ci/cfn-lint.txt
+
+      # cfn-lint entiende el transform de SAM.
+      - name: Lint CloudFormation template
+        run: cfn-lint infra/template.yml
+
+  # Único check a exigir en la branch protection. Un job salteado por su área cuenta como OK;
+  # `changes` está en needs para que un fallo del filtro no se convierta en "todo salteado = verde".
+  ci-ok:
+    if: always()
+    needs: [changes, frontend, infra]
+    runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && github.actor != 'dependabot[bot]' && vars.CI_RUNNER || 'ubuntu-latest' }}
+    steps:
+      - name: Verify all jobs succeeded or were skipped
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Job results: $RESULTS"
+          for r in $RESULTS; do
+            if [ "$r" != "success" ] && [ "$r" != "skipped" ]; then
+              echo "A required job did not succeed: $r" >&2
+              exit 1
+            fi
+          done
