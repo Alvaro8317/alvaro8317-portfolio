@@ -2,7 +2,7 @@
 // AWS User Group Neiva (13.10.2026): agradecimiento + acceso gratuito a mis cursos + redes.
 // Diseño "Pase de asistente": tarjeta navy tipo ticket, un curso destacado y dos secundarios.
 
-import { Footer } from "../components";
+import { EventHeader, Footer } from "../components";
 
 const talk = {
     group: "AWS User Group Neiva",
@@ -45,21 +45,12 @@ export default function MeetupNeiva() {
     // No se usa href="#cursos": el hash lo interpreta el mini-router de Root.tsx.
     const goToCourses = () => {
         const el = document.getElementById("cursos");
-        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (el) el.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
     };
 
     return (
         <main className="min-h-screen bg-white text-[#0a0a0a] dark:bg-[#0b0f14] dark:text-zinc-100 transition-colors">
-            <header className="sticky top-0 z-40 border-b border-black/5 dark:border-white/10 bg-white/80 dark:bg-[#0b0f14]/70 backdrop-blur">
-                <div className="mx-auto max-w-4xl px-5 py-4 flex items-center justify-between">
-                    <a href="#/" className={`font-bold tracking-tight text-lg text-color-aws ${focusRing}`}>
-                        Alvaro8317
-                    </a>
-                    <a href="#/" className={`text-sm transition-colors hover:text-amber-500 ${focusRing}`}>
-                        ← Volver al portafolio
-                    </a>
-                </div>
-            </header>
+            <EventHeader />
 
             <section className="mx-auto max-w-4xl px-5 py-10">
                 {/* Pase de asistente */}
@@ -116,7 +107,7 @@ export default function MeetupNeiva() {
                         {featured.meta}
                     </p>
                     <p className="mt-3 text-zinc-700 dark:text-zinc-300">{featured.desc}</p>
-                    <span className="mt-4 inline-flex min-h-11 items-center rounded-full bg-[#232F3E] dark:bg-[#FF9900] px-5 text-sm font-bold text-white dark:text-[#232F3E] transition-colors group-hover:bg-amber-500">
+                    <span className="mt-4 inline-flex min-h-11 items-center rounded-full bg-[#232F3E] dark:bg-[#FF9900] px-5 text-sm font-bold text-white dark:text-[#232F3E] transition-colors group-hover:bg-amber-500 group-hover:text-[#232F3E]">
                         Reclamar acceso →
                     </span>
                 </a>
