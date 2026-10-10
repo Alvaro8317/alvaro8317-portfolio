@@ -9,6 +9,10 @@ updates:
     directory: /src
     schedule:
       interval: weekly
+    ignore:
+      # Los tipos siguen al runtime de src/.nvmrc (Node 22); súbelos junto con el .nvmrc.
+      - dependency-name: "@types/node"
+        versions: [">=23"]
   # ci/cfn-lint.txt lleva hashes (uv pip compile); Dependabot lo regenera.
   - package-ecosystem: pip
     directory: /ci
