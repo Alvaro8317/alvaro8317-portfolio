@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # Las actions están fijadas por SHA; Dependabot las mantiene al día.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: npm
+    directory: /src
+    schedule:
+      interval: weekly
+  # ci/cfn-lint.txt lleva hashes (uv pip compile); Dependabot lo regenera.
+  - package-ecosystem: pip
+    directory: /ci
+    schedule:
+      interval: weekly

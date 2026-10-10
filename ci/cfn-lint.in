@@ -1,0 +1,3 @@
+# cfn-lint del CI (con hashes). Regenerar ci/cfn-lint.txt con:
+#   uv pip compile --universal --generate-hashes --python-version 3.12 ci/cfn-lint.in -o ci/cfn-lint.txt
+cfn-lint==1.57.2

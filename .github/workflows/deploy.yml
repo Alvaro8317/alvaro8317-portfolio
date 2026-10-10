@@ -2,31 +2,83 @@ name: Deploy frontend
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+    # Solo lo que sube este workflow: el sitio de src/.
+    paths:
+      - 'src/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+# Un solo deploy a la vez; los pendientes esperan en cola, nunca se cancelan a medias.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+  # CI reutilizable (ci.yml expone workflow_call y un job final `ci-ok`); fuera de un PR
+  # corre todas sus áreas.
+  ci:
+    uses: ./.github/workflows/ci.yml
 
-      - uses: aws-actions/configure-aws-credentials@v5
+  # npm ci y el build corren sin credenciales AWS: el código de las devDependencies nunca
+  # ve las claves del job que despliega. Solo pasa dist/ como artifact.
+  build:
+    needs: ci
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: src
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: src/.nvmrc
+          cache: npm
+          cache-dependency-path: src/package-lock.json
+
+      - run: npm ci --ignore-scripts
+
+      - run: npm run build
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist
+          path: src/dist
+          if-no-files-found: error
+          retention-days: 1
+
+  deploy:
+    needs: build
+    # Con credenciales: en el runner del WSL cada job corre en un contenedor propio.
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    env:
+      AWS_REGION: us-east-1
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist
+
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Build frontend
-        run: npm ci && npm run build
-        working-directory: src
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Upload to S3
         run: aws s3 cp dist s3://alvaro8317.lat/ --recursive
-        working-directory: src
 
       - name: Invalidate CloudFront cache
         run: |
+          set -euo pipefail
           DISTRIBUTION_ID=$(aws cloudformation describe-stacks \
             --stack-name alvaro8317-portfolio \
             --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" \
