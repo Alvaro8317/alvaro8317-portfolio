@@ -2,7 +2,7 @@
 // AWS Community Day: Data e IA (Mosquera, 05.09.2026).
 // Es una "ventana" post-charla: agradecimiento + cupones gratuitos + redes.
 
-import { Footer } from "../components";
+import { EventHeader, Footer } from "../components";
 
 const TEAL = "#0AB981";
 
@@ -54,16 +54,7 @@ const courses: Course[] = [
 export default function CommunityDay() {
     return (
         <main className="min-h-screen bg-white text-[#0a0a0a] dark:bg-[#0b0f14] dark:text-zinc-100 transition-colors">
-            <header className="sticky top-0 z-40 border-b border-black/5 dark:border-white/10 bg-white/80 dark:bg-[#0b0f14]/70 backdrop-blur">
-                <div className="mx-auto max-w-4xl px-5 py-4 flex items-center justify-between">
-                    <a href="#/" className="font-bold tracking-tight text-lg text-color-aws">
-                        Alvaro8317
-                    </a>
-                    <a href="#/" className="text-sm transition-colors hover:text-amber-500">
-                        ← Volver al portafolio
-                    </a>
-                </div>
-            </header>
+            <EventHeader />
 
             <section className="mx-auto max-w-4xl px-5 py-10">
                 <p

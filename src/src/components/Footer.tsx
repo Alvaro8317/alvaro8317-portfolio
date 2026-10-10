@@ -49,7 +49,7 @@ const Footer = () => {
     return (
         <footer className="mt-16 border-t border-black/5 dark:border-white/10">
             <div className="mx-auto max-w-4xl px-5 py-10 flex flex-col items-center gap-4">
-                <div className="flex items-center gap-5">
+                <div className="flex items-center gap-1">
                     {socials.map((s) => (
                         <a
                             key={s.label}
@@ -58,7 +58,7 @@ const Footer = () => {
                             rel="noreferrer"
                             aria-label={s.label}
                             title={s.label}
-                            className="text-zinc-400 transition-colors hover:text-amber-500 dark:text-zinc-500 dark:hover:text-amber-400"
+                            className="flex h-11 w-11 items-center justify-center text-zinc-400 transition-colors hover:text-amber-500 dark:text-zinc-500 dark:hover:text-amber-400 focus-visible:outline-2 focus-visible:outline-amber-500"
                         >
                             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-5 h-5 block">
                                 {s.icon}
