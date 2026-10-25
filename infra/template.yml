@@ -91,6 +91,47 @@ Resources:
               StringEquals:
                 AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}"
 
+  # Rol que asume deploy.yml por OIDC (sin llaves estáticas). Solo lo puede asumir un workflow de
+  # main de este repo, y solo puede subir al bucket, invalidar esta distribución y leer los
+  # outputs de este stack. El provider OIDC de GitHub ya existe en la cuenta (lo crea el stack
+  # de OIDC de aws-cert-simulator), por eso se referencia y no se crea aquí.
+  GitHubDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Deploy del portafolio desde GitHub Actions (main) por OIDC
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Sub "arn:aws:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com"
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                token.actions.githubusercontent.com:sub: repo:Alvaro8317/alvaro8317-portfolio:ref:refs/heads/main
+      Policies:
+        - PolicyName: deploy-site
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: UploadSite
+                Effect: Allow
+                Action: s3:PutObject
+                Resource: !Sub "arn:aws:s3:::${BucketS3}/*"
+              - Sid: ListSite
+                Effect: Allow
+                Action: s3:ListBucket
+                Resource: !Sub "arn:aws:s3:::${BucketS3}"
+              - Sid: InvalidateCache
+                Effect: Allow
+                Action: cloudfront:CreateInvalidation
+                Resource: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}"
+              - Sid: ReadStackOutputs
+                Effect: Allow
+                Action: cloudformation:DescribeStacks
+                Resource: !Ref AWS::StackId
+
 Outputs:
   S3BucketName:
     Description: Nombre del bucket S3 que aloja el portafolio.
@@ -115,3 +156,7 @@ Outputs:
   PortfolioURL:
     Description: URL publica final del portafolio.
     Value: !Sub "https://${SubDomain}"
+
+  GitHubDeployRoleArn:
+    Description: ARN del rol que asume deploy.yml (va en la variable de repo AWS_DEPLOY_ROLE_ARN).
+    Value: !GetAtt GitHubDeployRole.Arn

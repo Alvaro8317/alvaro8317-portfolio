@@ -96,7 +96,10 @@ Commits in English, one bullet per file or folder, files staged by name, no trai
   self-hosted runner when the `CI_RUNNER` repo variable is set, otherwise on `ubuntu-latest`.
 - `.github/workflows/deploy.yml` runs on pushes to `main` (`src/**` or the workflow itself):
   reuses `ci.yml`, builds without AWS credentials, uploads `dist/` to `s3://alvaro8317.lat/` and
-  invalidates the CloudFront distribution read from the stack outputs.
+  invalidates the CloudFront distribution read from the stack outputs. The `deploy` job assumes
+  `GitHubDeployRole` (`infra/template.yml`) over OIDC, with its ARN in the `AWS_DEPLOY_ROLE_ARN`
+  repo variable: no static AWS keys in secrets. It always runs on `ubuntu-latest`, never on the
+  self-hosted runner, because it holds credentials.
 
 ## `designer`, `implementer` and `critic` agents (`.claude/agents/`)
 
