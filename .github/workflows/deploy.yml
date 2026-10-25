@@ -56,9 +56,14 @@ jobs:
 
   deploy:
     needs: build
-    # Con credenciales: en el runner del WSL cada job corre en un contenedor propio.
-    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}
+    # Con credenciales: siempre en un runner de GitHub, nunca en el self-hosted del WSL (igual
+    # que los jobs de deploy de aws-cert-simulator).
+    runs-on: ubuntu-latest
     timeout-minutes: 15
+    # id-token: el token OIDC con el que se asume el rol; sin llaves estáticas en secrets.
+    permissions:
+      contents: read
+      id-token: write
     env:
       AWS_REGION: us-east-1
     steps:
@@ -67,10 +72,10 @@ jobs:
           name: dist
           path: dist
 
+      # Rol GitHubDeployRole de infra/template.yml (output GitHubDeployRoleArn).
       - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Upload to S3
